@@ -116,7 +116,7 @@ void setup() {
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
-  config.fb_count = 2;
+  config.fb_count = 1;
 
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
@@ -183,7 +183,7 @@ void loop() {
     incoming.stop();
   }
 
-  if (millis() - lastTime >= 10000){
+  if (millis() - lastTime >= 5000){
       captureImg();
       lastTime = millis();
   }

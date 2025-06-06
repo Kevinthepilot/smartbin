@@ -22,8 +22,8 @@ def upload_image():
      file.save("uploaded_cam.jpg")
      print("Image received and saved!")
      
-
-     result = Ai.predict()
+     model = Ai()
+     result = model.predict()
      print(result)
      requests.get(f"http://{clientIp}/{result.lower()}")
      return "OK", 200   
