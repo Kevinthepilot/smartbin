@@ -38,6 +38,7 @@ void adjustSettings(){
 String serverName = "172.20.10.4"; //Change this to match server's local IP
 String serverPath = "/upload";
 WiFiClient client;
+WiFiServer server(80);
 
 void captureImg(){
   camera_fb_t * fb = NULL;
@@ -82,13 +83,6 @@ void captureImg(){
     client.stop();
   }
   esp_camera_fb_return(fb);
-}
-
-void startCameraServer(){
-  while (WiFi.status() == WL_CONNECTED) {
-    delay(7000);
-    captureImg();
-  }
 }
 
 
@@ -143,15 +137,56 @@ void setup() {
   Serial.println("");
   Serial.println("WiFi connected");
   Serial.println(WiFi.localIP());
+  server.begin();
 
   adjustSettings();
-  captureImg();
-  startCameraServer();
 }
 
-
+unsigned long lastTime = 0;
 void loop() {
-  delay(1);
+  WiFiClient incoming = server.available();
+  if (incoming){
+    String header = "";
+    String currentLine = "";
+
+    while (incoming.connected()){
+      if (incoming.available()){
+        char c = incoming.read();
+        header += c;
+
+        if (c == '\n') {
+          if (currentLine.length() == 0) {
+            incoming.println("HTTP/1.1 200 OK");
+            incoming.println("Content-type:text/html");
+            incoming.println("Connection: close");
+            incoming.println();
+            incoming.println("Trash type received!");
+
+            if (header.indexOf("GET /recycle") >= 0){
+              Serial.println("Recycle trash");
+            } else if (header.indexOf("GET /non-recycle") >= 0){
+              Serial.println("Non Recycle trash");
+            } else if (header.indexOf("GET /dangerous") >= 0){
+              Serial.println("Dangerous trash");
+            }
+
+            break;
+          } else {
+            currentLine = "";
+          }
+        } else if (c != '\r') {
+          currentLine += c;
+        }
+      }
+    }
+    delay(10);
+    incoming.stop();
+  }
+
+  if (millis() - lastTime >= 10000){
+      captureImg();
+      lastTime = millis();
+  }
 }
 
 

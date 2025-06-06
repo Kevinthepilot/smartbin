@@ -31,6 +31,7 @@ class Ai:
 
         results = model(frame)
         result = results[0]
+        group = "None"
 
         for box in result.boxes:
             cls_id = int(box.cls[0].item())

@@ -25,7 +25,7 @@ def upload_image():
 
      result = Ai.predict()
      print(result)
-     requests.get(f"http://{clientIp}/{result}")
+     requests.get(f"http://{clientIp}/{result.lower()}")
      return "OK", 200   
      
 
