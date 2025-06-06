@@ -41,7 +41,8 @@ WiFiClient client;
 WiFiServer server(80);
 
 void captureImg(){
-  camera_fb_t * fb = NULL;
+  camera_fb_t * fb = esp_camera_fb_get();
+  esp_camera_fb_return(fb);
   fb = esp_camera_fb_get();
 
   if (!fb){

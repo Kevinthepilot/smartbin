@@ -65,9 +65,9 @@ class Ai:
           best_label = ""
           best_coords = ()
           conf = 0
+          label = "Unknown"
 
           for box in result.boxes:
-               x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                cls_id = int(box.cls[0].item())
                conf = float(box.conf[0].item())
                label = result.names[cls_id]
@@ -75,7 +75,6 @@ class Ai:
           if conf > best_conf:
                best_conf = conf
                best_label = label
-               best_coords = (x1, y1, x2, y2)
 
           # Chuyển gallon thành plastic bag nếu conf thấp
           if best_label == "chemical_plastic_gallon" and best_conf < 0.8:
