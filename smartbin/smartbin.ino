@@ -35,7 +35,11 @@ void adjustSettings(){
 
 }
 
+<<<<<<< HEAD
 String serverName = "172.20.10.4"; //Change this to match server's local IP
+=======
+String serverName = "192.168.1.32"; //Change this to match server's local IP
+>>>>>>> ebcf4a651fe37065c03005c9bd4451f642f24c1b
 String serverPath = "/upload";
 WiFiClient client;
 
@@ -49,6 +53,10 @@ void captureImg(){
   }
   //Connecting to server
   if (client.connect(serverName.c_str(), 8080)){
+<<<<<<< HEAD
+=======
+    Serial.println("Connected to server!");
+>>>>>>> ebcf4a651fe37065c03005c9bd4451f642f24c1b
     String head = "--ESP\r\nContent-Disposition: form-data; name=\"imageFile\"; filename=\"cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
     String tail = "\r\n--ESP--\r\n";
 
