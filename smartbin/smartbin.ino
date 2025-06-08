@@ -4,6 +4,7 @@
 #include "key.h"
 #include "fb_gfx.h"
 #include "esp_http_server.h"
+#include <ESP32Servo.h>
 
 
 
@@ -35,10 +36,19 @@ void adjustSettings(){
 
 }
 
-String serverName = "172.20.10.4"; //Change this to match server's local IP
+String serverName = "192.168.1.32"; //Change this to match server's local IP
 String serverPath = "/upload";
 WiFiClient client;
 WiFiServer server(80);
+
+
+
+Servo servo1;
+Servo servo2;
+const int servoPin1 = 21;
+const int servoPin2 = 47;
+
+const int irPin = 38;
 
 void captureImg(){
   camera_fb_t * fb = esp_camera_fb_get();
@@ -90,6 +100,14 @@ void captureImg(){
 void setup() {
   Serial.begin(115200);
   Serial.println("");
+
+  pinMode(irPin, INPUT);
+
+  //Servo
+  servo1.attach(servoPin1);
+  servo2.attach(servoPin2);
+  servo1.write(0);    // 
+  servo2.write(10);   // 
 
   //Camera
   camera_config_t config;
@@ -143,13 +161,41 @@ void setup() {
   adjustSettings();
 }
 
+void rotateAndBack(bool isRecycle){
+  int delayTime = 1000;
+  int threshold = 10;
+  const int servo2Angle = 50;
+
+  //mode 1: recycle
+
+  if (isRecycle == 1){
+
+    servo1.write(180);
+    delay(delayTime);
+  }
+
+  servo2.write(servo2Angle);
+  delay(1000);
+  servo2.write(10);
+  delay(1000);
+
+  if (isRecycle ==1) servo1.write(0);
+
+}
+
 unsigned long lastTime = 0;
 void loop() {
   WiFiClient incoming = server.available();
+  int sensorValue = digitalRead(irPin);
+
+  if (sensorValue == LOW){
+    Serial.println("Signal received");
+    captureImg();
+  }
+
   if (incoming){
     String header = "";
     String currentLine = "";
-
     while (incoming.connected()){
       if (incoming.available()){
         char c = incoming.read();
@@ -165,8 +211,10 @@ void loop() {
 
             if (header.indexOf("GET /recycle") >= 0){
               Serial.println("Recycle trash");
+              rotateAndBack(1);
             } else if (header.indexOf("GET /non-recycle") >= 0){
               Serial.println("Non Recycle trash");
+              rotateAndBack(0);
             } else if (header.indexOf("GET /dangerous") >= 0){
               Serial.println("Dangerous trash");
             }
@@ -184,10 +232,4 @@ void loop() {
     incoming.stop();
   }
 
-  if (millis() - lastTime >= 5000){
-      captureImg();
-      lastTime = millis();
-  }
 }
-
-
