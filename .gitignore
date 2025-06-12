@@ -2,3 +2,5 @@
 /images
 /uploaded_cam.jpg
 __pycache__/
+dataset/
+/processed.jpg

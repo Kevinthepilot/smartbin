@@ -50,8 +50,10 @@ const int servoPin1 = 21;
 const int servoPin2 = 47;
 
 const int irPin = 38;
+bool isCapturing = false;
 
 void captureImg(){
+  isCapturing = true;
   camera_fb_t * fb = esp_camera_fb_get();
   esp_camera_fb_return(fb);
   fb = esp_camera_fb_get();
@@ -95,6 +97,7 @@ void captureImg(){
     client.stop();
   }
   esp_camera_fb_return(fb);
+  isCapturing = false;
 }
 
 
@@ -102,7 +105,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("");
 
-  pinMode(irPin, INPUT);
+  pinMode(irPin, INPUT_PULLUP);
 
   //Servo
   servo1.attach(servoPin1);
@@ -162,7 +165,9 @@ void setup() {
   adjustSettings();
 }
 
+bool isMoving = false;
 void rotateAndBack(int mode){
+  isMoving = true;
   int delayTime = 1500;
   int threshold = 10;
   const int servo2Angle = 50;
@@ -196,7 +201,8 @@ void rotateAndBack(int mode){
     delay(delayTime);
     servo1.write(90);
   }
-
+  delay(1000);
+  isMoving = false;
 }
 
 unsigned long lastTime = 0;
@@ -204,7 +210,8 @@ void loop() {
   WiFiClient incoming = server.available();
   int sensorValue = digitalRead(irPin);
 
-  if (sensorValue == LOW){
+  const int debounce = 500;
+  if (sensorValue == LOW && !isCapturing && !isMoving){
     Serial.println("Signal received");
     delay(1500);
     captureImg();
@@ -214,6 +221,7 @@ void loop() {
     String header = "";
     String currentLine = "";
     while (incoming.connected()){
+      
       if (incoming.available()){
         char c = incoming.read();
         header += c;
@@ -231,14 +239,14 @@ void loop() {
               rotateAndBack(1);
             } else if (header.indexOf("GET /non-recycle") >= 0){
               Serial.println("Non Recycle trash");
-              rotateAndBack(2);
+              rotateAndBack(4);
             } else if (header.indexOf("GET /dangerous") >= 0){
               Serial.println("Dangerous trash");
               rotateAndBack(3);
             }
-            else if (header.indexOf("GET /unknown") >= 0){
+            else if (header.indexOf("GET /none") >= 0){
               Serial.println("Unknown trash");
-              rotateAndBack(4);
+              rotateAndBack(2);
             }
 
             break;
