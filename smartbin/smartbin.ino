@@ -4,6 +4,7 @@
 #include "key.h"
 #include "fb_gfx.h"
 #include "esp_http_server.h"
+
 #include <ESP32Servo.h>
 
 
@@ -36,7 +37,7 @@ void adjustSettings(){
 
 }
 
-String serverName = "192.168.1.32"; //Change this to match server's local IP
+String serverName = "192.168.1.36"; //Change this to match server's local IP
 String serverPath = "/upload";
 WiFiClient client;
 WiFiServer server(80);
@@ -106,8 +107,8 @@ void setup() {
   //Servo
   servo1.attach(servoPin1);
   servo2.attach(servoPin2);
-  servo1.write(0);    // 
-  servo2.write(10);   // 
+  servo1.write(90);    // 
+  servo2.write(90);   // 
 
   //Camera
   camera_config_t config;
@@ -161,25 +162,40 @@ void setup() {
   adjustSettings();
 }
 
-void rotateAndBack(bool isRecycle){
-  int delayTime = 1000;
+void rotateAndBack(int mode){
+  int delayTime = 1500;
   int threshold = 10;
   const int servo2Angle = 50;
 
   //mode 1: recycle
-
-  if (isRecycle == 1){
-
+  if (mode == 1){
+    servo2.write(90 - servo2Angle);
+    delay(delayTime);
+    servo2.write(90);
+  }
+  else if (mode == 2){
+    servo2.write(90 + servo2Angle);
+    delay(delayTime);
+    servo2.write(90);
+  }
+  else if (mode == 3){
     servo1.write(180);
     delay(delayTime);
+    servo2.write(90 - servo2Angle);
+    delay(delayTime);
+    servo2.write(90);
+    delay(delayTime);
+    servo1.write(90);
   }
-
-  servo2.write(servo2Angle);
-  delay(1000);
-  servo2.write(10);
-  delay(1000);
-
-  if (isRecycle ==1) servo1.write(0);
+  else if (mode == 4){
+    servo1.write(180);
+    delay(delayTime);
+    servo2.write(90 + servo2Angle);
+    delay(delayTime);
+    servo2.write(90);
+    delay(delayTime);
+    servo1.write(90);
+  }
 
 }
 
@@ -190,6 +206,7 @@ void loop() {
 
   if (sensorValue == LOW){
     Serial.println("Signal received");
+    delay(1500);
     captureImg();
   }
 
@@ -214,9 +231,14 @@ void loop() {
               rotateAndBack(1);
             } else if (header.indexOf("GET /non-recycle") >= 0){
               Serial.println("Non Recycle trash");
-              rotateAndBack(0);
+              rotateAndBack(2);
             } else if (header.indexOf("GET /dangerous") >= 0){
               Serial.println("Dangerous trash");
+              rotateAndBack(3);
+            }
+            else if (header.indexOf("GET /unknown") >= 0){
+              Serial.println("Unknown trash");
+              rotateAndBack(4);
             }
 
             break;

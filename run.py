@@ -4,7 +4,7 @@ import numpy as np
 from ultralytics import YOLO
 
 # Load YOLOv8 model
-model = YOLO(r"tester2.pt")
+model = YOLO(r"a.pt")
 model.conf = 0.3  # confidence threshold
 
 # Nhóm phân loại rác
