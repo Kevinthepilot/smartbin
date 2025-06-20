@@ -37,7 +37,7 @@ void adjustSettings(){
 
 }
 
-String serverName = "192.168.1.36"; //Change this to match server's local IP
+String serverName = "192.168.1.32"; //Change this to match server's local IP
 String serverPath = "/upload";
 WiFiClient client;
 WiFiServer server(80);
